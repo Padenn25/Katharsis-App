@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ritual</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@200;300;400&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --blue:   #004d75;
+  --orange: #c44a0a;
+  --gold:   #b8820e;
+  --mid:    #7a3520;
+
+  --accent:  #f9c45a;
+  --accent2: #5ecfed;
+
+  --text:     rgba(255,255,255,0.90);
+  --text-dim: rgba(255,255,255,0.42);
+  --glass:    rgba(255,255,255,0.08);
+  --glass-b:  rgba(255,255,255,0.14);
+}
+
+html, body { min-height: 100%; font-family: 'DM Sans', sans-serif; font-weight: 300; color: var(--text); overflow-x: hidden; }
+
+body {
+  background: linear-gradient(125deg,
+    #004d75 0%,
+    #7a3520 35%,
+    #c44a0a 65%,
+    #b8820e 100%
+  );
+  background-size: 280% 280%;
+  animation: bg 16s ease infinite;
+  min-height: 100vh;
+}
+
+@keyframes bg {
+  0%   { background-position: 0% 0%; }
+  33%  { background-position: 100% 0%; }
+  66%  { background-position: 100% 100%; }
+  100% { background-position: 0% 0%; }
+}
+
+/* frosted overlay so text stays readable */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.28);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.screen {
+  position: relative;
+  z-index: 1;
+  display: none;
+  min-height: 100vh;
+  padding: 56px 28px;
+  max-width: 500px;
+  margin: 0 auto;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 26px;
+}
+.screen.active { display: flex; }
+
+@keyframes up {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.screen.active > * { animation: up 0.45s ease both; }
+.screen.active > *:nth-child(2) { animation-delay: 0.07s; }
+.screen.active > *:nth-child(3) { animation-delay: 0.14s; }
+.screen.active > *:nth-child(4) { animation-delay: 0.21s; }
+.screen.active > *:nth-child(5) { animation-delay: 0.28s; }
+.screen.active > *:nth-child(6) { animation-delay: 0.35s; }
+
+/* TYPE */
+.eyebrow {
+  font-size: 10px; font-weight: 400;
+  letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--accent); opacity: 0.85;
+}
+
+h1 {
+  font-size: clamp(2.6rem, 9vw, 3.6rem);
+  font-weight: 200; line-height: 1.06;
+  letter-spacing: -0.025em; color: #fff;
+}
+
+h2 {
+  font-size: clamp(1.9rem, 6vw, 2.6rem);
+  font-weight: 200; line-height: 1.12;
+  letter-spacing: -0.02em; color: #fff;
+}
+
+p { font-size: 14px; font-weight: 300; line-height: 1.85; color: var(--text); max-width: 400px; }
+.dim { color: var(--text-dim); font-size: 13px; line-height: 1.7; }
+
+/* GLASS CARD */
+.card {
+  width: 100%;
+  background: var(--glass);
+  border: 1px solid var(--glass-b);
+  border-radius: 16px;
+  padding: 22px 26px;
+  backdrop-filter: blur(20px);
+}
+.card-label {
+  font-size: 10px; font-weight: 400;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--text-dim); margin-bottom: 14px;
+}
+
+/* BUTTONS */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 13px 30px; border-radius: 100px; border: none; cursor: pointer;
+  font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 400;
+  letter-spacing: 0.04em; transition: all 0.22s ease; white-space: nowrap;
+}
+.btn-primary { background: var(--accent); color: #1a0e00; }
+.btn-primary:hover { background: #ffd97a; transform: translateY(-1px); }
+.btn-ghost {
+  background: var(--glass); color: var(--text-dim);
+  border: 1px solid var(--glass-b); backdrop-filter: blur(12px);
+}
+.btn-ghost:hover { color: var(--text); border-color: rgba(255,255,255,0.25); }
+.btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
+
+/* PROGRESS */
+.progress { display: flex; gap: 6px; align-items: center; }
+.pdot { height: 2px; border-radius: 2px; background: rgba(255,255,255,0.2); transition: all 0.4s; width: 18px; }
+.pdot.done { background: var(--accent); }
+.pdot.current { background: var(--accent2); width: 36px; }
+
+/* TIMER RING */
+.ring-wrap { position: relative; width: 160px; height: 160px; }
+.ring-wrap svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.ring-bg { fill: none; stroke: rgba(255,255,255,0.1); stroke-width: 1.5; }
+.ring-fg { fill: none; stroke: var(--accent); stroke-width: 1.5; stroke-linecap: round; transition: stroke-dashoffset 1s linear; }
+.ring-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; }
+.ring-time { font-size: 2.4rem; font-weight: 200; letter-spacing: -0.03em; color: #fff; line-height: 1; }
+.ring-sub { font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--text-dim); }
+
+/* BREATH */
+.breath-orb-wrap { position: relative; width: 120px; height: 120px; display: flex; align-items: center; justify-content: center; }
+.orb-outer {
+  position: absolute; border-radius: 50%;
+  border: 1px solid rgba(249,196,90,0.3);
+  transition: all 0.65s cubic-bezier(0.4,0,0.2,1);
+  width: 80px; height: 80px;
+}
+.orb-inner {
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--accent) 0%, var(--orange) 100%);
+  opacity: 0.55;
+  transition: all 0.65s cubic-bezier(0.4,0,0.2,1);
+  width: 44px; height: 44px;
+}
+body.b-in  .orb-inner { width: 92px; height: 92px; opacity: 0.75; }
+body.b-in  .orb-outer { width: 112px; height: 112px; border-color: rgba(249,196,90,0.5); }
+body.b-hold .orb-inner { width: 92px; height: 92px; opacity: 0.65; }
+body.b-hold .orb-outer { width: 112px; height: 112px; border-color: rgba(94,207,237,0.4); }
+body.b-out  .orb-inner { width: 44px; height: 44px; opacity: 0.35; }
+body.b-out  .orb-outer { width: 64px; height: 64px; border-color: rgba(249,196,90,0.2); }
+
+.breath-state { font-size: 1.4rem; font-weight: 200; color: #fff; letter-spacing: -0.01em; }
+.breath-meta  { font-size: 12px; color: var(--text-dim); letter-spacing: 0.05em; }
+
+/* MUSIC */
+.music-list { list-style: none; width: 100%; display: flex; flex-direction: column; gap: 3px; }
+.music-item {
+  display: flex; align-items: center; gap: 14px;
+  padding: 12px 16px; border-radius: 10px;
+  border: 1px solid transparent; cursor: pointer;
+  transition: all 0.2s; background: transparent;
+}
+.music-item:hover { background: var(--glass); border-color: var(--glass-b); }
+.music-item.active { background: rgba(249,196,90,0.1); border-color: rgba(249,196,90,0.28); }
+.music-pip { width: 5px; height: 5px; border-radius: 50%; background: var(--text-dim); flex-shrink: 0; transition: background 0.3s; }
+.music-item.active .music-pip { background: var(--accent); }
+.music-name { font-size: 13px; color: var(--text); flex: 1; }
+.music-desc { font-size: 11px; color: var(--text-dim); margin-top: 1px; }
+.music-phase { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); opacity: 0.6; white-space: nowrap; flex-shrink: 0; }
+.music-item.active .music-phase { opacity: 1; }
+
+/* PROMPTS */
+.prompts { width: 100%; display: flex; flex-direction: column; gap: 8px; }
+.prompt {
+  padding: 16px 20px; border-radius: 12px;
+  background: var(--glass); border: 1px solid var(--glass-b);
+  font-size: 13px; font-style: italic; color: var(--text);
+  line-height: 1.7; cursor: pointer; transition: all 0.2s; text-align: left;
+  backdrop-filter: blur(12px);
+}
+.prompt:hover { border-color: rgba(249,196,90,0.35); background: rgba(249,196,90,0.08); }
+.prompt.used { opacity: 0.25; }
+
+/* CHECKLIST */
+.checklist { display: flex; flex-direction: column; gap: 12px; width: 100%; }
+.check-item { display: flex; align-items: center; gap: 16px; font-size: 14px; color: var(--text); }
+.check-icon {
+  width: 20px; flex-shrink: 0;
+  display: flex; align-items: center;
+}
+.check-icon::after {
+  content: '';
+  display: block;
+  width: 12px; height: 1px;
+  background: var(--accent);
+  opacity: 0.7;
+}
+
+/* QUOTE */
+.quote { font-size: 1.15rem; font-weight: 200; font-style: italic; color: #fff; line-height: 1.65; letter-spacing: 0.01em; }
+
+/* SPOTIFY */
+.spotify-hint {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 18px; border-radius: 10px;
+  background: rgba(29,185,84,0.08); border: 1px solid rgba(29,185,84,0.2);
+  width: 100%; font-size: 12px; color: var(--text-dim);
+  backdrop-filter: blur(12px);
+}
+.spotify-hint a { color: rgba(29,185,84,0.8); text-decoration: none; margin-left: auto; font-size: 11px; }
+.spotify-hint a:hover { color: #1db954; }
+
+/* WRITE TIMER */
+.write-timer-display { font-size: 3rem; font-weight: 200; letter-spacing: -0.04em; color: var(--accent); display: none; line-height: 1; }
+
+/* DONE */
+.done-mark {
+  font-size: 2.8rem; line-height: 1;
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+  body { background-size: 100% 100% !important; }
+}
+</style>
+</head>
+<body>
+
+<!-- S0 START -->
+<div class="screen active" id="s0">
+  <div class="progress">
+    <div class="pdot current"></div><div class="pdot"></div><div class="pdot"></div><div class="pdot"></div>
+  </div>
+  <div>
+    <div class="eyebrow" style="margin-bottom:18px">Abendritual</div>
+    <h1>Ein Raum<br>für dich.</h1>
+  </div>
+  <p>Drei Phasen. Kein Alkohol. Nur du, deine Kopfhörer und etwas Zeit.</p>
+  <div class="card">
+    <div class="card-label">Was dich erwartet</div>
+    <div class="checklist">
+      <div class="check-item"><span class="check-icon"></span> Ankommen, 5–10 Min</div>
+      <div class="check-item"><span class="check-icon"></span> Öffnen mit Musik, 20–40 Min</div>
+      <div class="check-item"><span class="check-icon"></span> Entladen mit Schreiben, 15–20 Min</div>
+    </div>
+  </div>
+  <button class="btn btn-primary" onclick="go('s1')">Starten</button>
+</div>
+
+<!-- S1 VORBEREITUNG -->
+<div class="screen" id="s1">
+  <div class="progress">
+    <div class="pdot done"></div><div class="pdot current"></div><div class="pdot"></div><div class="pdot"></div>
+  </div>
+  <div class="eyebrow">Phase 1 · Ankommen</div>
+  <h2>Bereite dich vor</h2>
+  <div class="checklist" style="gap:16px">
+    <div class="check-item"><span class="check-icon"></span> Raum abdunkeln</div>
+    <div class="check-item"><span class="check-icon"></span> Kopfhörer aufsetzen</div>
+    <div class="check-item"><span class="check-icon"></span> Hinlegen oder bequem sitzen</div>
+    <div class="check-item"><span class="check-icon"></span> Handy auf lautlos</div>
+  </div>
+  <button class="btn btn-primary" onclick="go('s2')">Ich bin bereit</button>
+</div>
+
+<!-- S2 STILLE -->
+<div class="screen" id="s2">
+  <div class="eyebrow">Phase 1 · Stille</div>
+  <h2>Zwei Minuten<br>nichts.</h2>
+  <div class="ring-wrap">
+    <svg viewBox="0 0 160 160">
+      <circle class="ring-bg" cx="80" cy="80" r="72"/>
+      <circle class="ring-fg" id="sil-arc" cx="80" cy="80" r="72" stroke-dasharray="452.4" stroke-dashoffset="0"/>
+    </svg>
+    <div class="ring-center">
+      <div class="ring-time" id="sil-time">2:00</div>
+      <div class="ring-sub">verbleibend</div>
+    </div>
+  </div>
+  <p>Lass alle Gedanken einfach da sein. Nichts muss gelöst werden.</p>
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="toggleSilence()" id="sil-btn">Starten</button>
+    <button class="btn btn-ghost" onclick="go('s3')">Überspringen</button>
+  </div>
+</div>
+
+<!-- S3 ATMUNG -->
+<div class="screen" id="s3">
+  <div class="eyebrow">Phase 1 · Atmung</div>
+  <h2>4 · 7 · 8</h2>
+  <div style="display:flex;align-items:center;gap:28px">
+    <div class="breath-orb-wrap">
+      <div class="orb-outer"></div>
+      <div class="orb-inner"></div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <div class="breath-state" id="b-state">Bereit?</div>
+      <div class="breath-meta" id="b-round">0 von 5 Runden</div>
+      <div class="breath-meta" id="b-sec" style="color:var(--accent);margin-top:2px"></div>
+    </div>
+  </div>
+  <p class="dim">4 Sek einatmen · 7 Sek halten · 8 Sek ausatmen</p>
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="startBreath()" id="b-btn">Starten</button>
+    <button class="btn btn-ghost" onclick="go('s4')">Weiter</button>
+  </div>
+</div>
+
+<!-- S4 FRAGE -->
+<div class="screen" id="s4">
+  <div class="eyebrow">Phase 1 · Innenschau</div>
+  <h2>Eine Frage,<br>keine Antwort nötig.</h2>
+  <div class="card">
+    <p class="quote">„Was trage ich gerade mit mir, das ich noch nicht angeschaut habe?"</p>
+  </div>
+  <p>Lass die Frage im Raum stehen. Zwei, drei Minuten. Nichts erzwingen.</p>
+  <button class="btn btn-primary" onclick="go('s5')">Weiter zu Phase 2</button>
+</div>
+
+<!-- S5 MUSIK -->
+<div class="screen" id="s5">
+  <div class="progress">
+    <div class="pdot done"></div><div class="pdot done"></div><div class="pdot current"></div><div class="pdot"></div>
+  </div>
+  <div class="eyebrow">Phase 2 · Öffnen</div>
+  <h2>Deine Playlist.</h2>
+  <div class="spotify-hint">
+    <span style="opacity:0.5;font-size:11px;letter-spacing:0.1em">SPOTIFY</span>
+    <span>Öffne Spotify parallel.</span>
+    <a href="https://open.spotify.com" target="_blank">Spotify →</a>
+  </div>
+  <ul class="music-list">
+    <li class="music-item active" onclick="setActive(this)">
+      <div class="music-pip"></div>
+      <div style="flex:1"><div class="music-name">Max Richter · On the Nature of Daylight</div><div class="music-desc">instrumental, ruhig</div></div>
+      <div class="music-phase">Einstieg</div>
+    </li>
+    <li class="music-item" onclick="setActive(this)">
+      <div class="music-pip"></div>
+      <div style="flex:1"><div class="music-name">Nils Frahm · Says</div><div class="music-desc">instrumental, aufbauend</div></div>
+      <div class="music-phase">Öffnen</div>
+    </li>
+    <li class="music-item" onclick="setActive(this)">
+      <div class="music-pip"></div>
+      <div style="flex:1"><div class="music-name">Bill Evans · Peace Piece</div><div class="music-desc">instrumental, meditativ</div></div>
+      <div class="music-phase">Öffnen</div>
+    </li>
+    <li class="music-item" onclick="setActive(this)">
+      <div class="music-pip"></div>
+      <div style="flex:1"><div class="music-name">Pearl Jam · Black</div><div class="music-desc">Stimme, emotional</div></div>
+      <div class="music-phase">Intensität</div>
+    </li>
+    <li class="music-item" onclick="setActive(this)">
+      <div class="music-pip"></div>
+      <div style="flex:1"><div class="music-name">Dein Peak-Song ★</div><div class="music-desc">das Lied, das dich fast zum Weinen bringt</div></div>
+      <div class="music-phase" style="color:var(--accent2)">Peak</div>
+    </li>
+    <li class="music-item" onclick="setActive(this)">
+      <div class="music-pip"></div>
+      <div style="flex:1"><div class="music-name">Satie · Gymnopédie No. 1</div><div class="music-desc">instrumental, auflösend</div></div>
+      <div class="music-phase">Landen</div>
+    </li>
+    <li class="music-item" onclick="setActive(this)">
+      <div class="music-pip"></div>
+      <div style="flex:1"><div class="music-name">Arvo Pärt · Spiegel im Spiegel</div><div class="music-desc">instrumental, still</div></div>
+      <div class="music-phase">Abschluss</div>
+    </li>
+  </ul>
+  <p class="dim">Tippe auf ein Stück, um es als aktuell zu markieren.</p>
+  <button class="btn btn-primary" onclick="go('s6')">Musik fertig, weiter zu Phase 3</button>
+</div>
+
+<!-- S6 SCHREIBEN -->
+<div class="screen" id="s6">
+  <div class="progress">
+    <div class="pdot done"></div><div class="pdot done"></div><div class="pdot done"></div><div class="pdot current"></div>
+  </div>
+  <div class="eyebrow">Phase 3 · Entladen</div>
+  <h2>Stift und Papier.</h2>
+  <p>Schreibe ohne Stopp. Wähle einen Einstiegssatz oder beginne einfach.</p>
+  <div class="prompts">
+    <div class="prompt" onclick="this.classList.toggle('used')">"Was mich gerade wirklich beschäftigt, auch wenn ich es selten sage, ist…"</div>
+    <div class="prompt" onclick="this.classList.toggle('used')">"Ich bin müde von…"</div>
+    <div class="prompt" onclick="this.classList.toggle('used')">"Was ich mir wünsche, aber kaum ausspreche, ist…"</div>
+  </div>
+  <div class="dim">Danach: lesen oder wegwerfen. Beides ist richtig.</div>
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="startWrite()" id="w-btn">20 Min Timer</button>
+    <button class="btn btn-ghost" onclick="go('s7')">Fertig</button>
+  </div>
+  <div class="write-timer-display" id="w-timer">20:00</div>
+</div>
+
+<!-- S7 DONE -->
+<div class="screen" id="s7">
+  <div class="done-mark">✦</div>
+  <div class="eyebrow">Ritual abgeschlossen</div>
+  <h2>Gut gemacht.</h2>
+  <p>Das war echte Arbeit, auch wenn es von aussen so aussah, als hättest du einfach nur dagelegen.</p>
+  <div class="card">
+    <div class="card-label">Noch drei Dinge</div>
+    <div class="checklist" style="gap:14px">
+      <div class="check-item"><span class="check-icon"></span> Glas Wasser trinken</div>
+      <div class="check-item"><span class="check-icon"></span> Kurz Licht machen</div>
+      <div class="check-item"><span class="check-icon"></span> 10 Minuten kein Handy</div>
+    </div>
+  </div>
+  <p class="dim">Das erste Mal geht vielleicht nicht so tief. Nach zwei, drei Malen kommt es leichter.</p>
+  <button class="btn btn-ghost" onclick="restart()">Nochmals von vorne</button>
+</div>
+
+<script>
+function go(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  stopSilence(); stopBreath();
+}
+function restart() {
+  stopWrite(); go('s0');
+  document.querySelectorAll('.music-item').forEach((el,i) => el.classList.toggle('active', i===0));
+  document.querySelectorAll('.prompt').forEach(p => p.classList.remove('used'));
+}
+
+/* SILENCE */
+let silInt=null,silRun=false,silLeft=120;
+function toggleSilence(){
+  if(silRun){clearInterval(silInt);silRun=false;document.getElementById('sil-btn').textContent='Weiter';}
+  else{
+    silRun=true;document.getElementById('sil-btn').textContent='Pause';
+    silInt=setInterval(()=>{
+      silLeft--;
+      const m=Math.floor(silLeft/60),s=silLeft%60;
+      document.getElementById('sil-time').textContent=`${m}:${String(s).padStart(2,'0')}`;
+      document.getElementById('sil-arc').style.strokeDashoffset=452.4*(1-silLeft/120);
+      if(silLeft<=0){clearInterval(silInt);silRun=false;const b=document.getElementById('sil-btn');b.textContent='✓ Fertig';b.disabled=true;}
+    },1000);
+  }
+}
+function stopSilence(){
+  clearInterval(silInt);silRun=false;silLeft=120;
+  const t=document.getElementById('sil-time');if(t)t.textContent='2:00';
+  const a=document.getElementById('sil-arc');if(a)a.style.strokeDashoffset=0;
+  const b=document.getElementById('sil-btn');if(b){b.textContent='Starten';b.disabled=false;}
+}
+
+/* BREATH */
+let bTO=null,bRun=false,bRound=0;
+function startBreath(){if(bRun)return;bRun=true;bRound=0;document.getElementById('b-btn').disabled=true;doRound();}
+function doRound(){
+  if(!bRun)return;
+  if(bRound>=5){bDone();return;}
+  bRound++;
+  document.getElementById('b-round').textContent=`${bRound} von 5 Runden`;
+  bs('b-in','Einatmen','4 Sek');
+  bTO=setTimeout(()=>{if(!bRun)return;
+    bs('b-hold','Halten','7 Sek');
+    bTO=setTimeout(()=>{if(!bRun)return;
+      bs('b-out','Ausatmen','8 Sek');
+      bTO=setTimeout(doRound,8000);
+    },7000);
+  },4000);
+}
+function bs(cls,lbl,sec){document.body.className=cls;document.getElementById('b-state').textContent=lbl;document.getElementById('b-sec').textContent=sec;}
+function bDone(){bRun=false;document.body.className='';document.getElementById('b-state').textContent='Fertig ✓';document.getElementById('b-sec').textContent='';}
+function stopBreath(){clearTimeout(bTO);bRun=false;document.body.className='';}
+
+/* MUSIC */
+function setActive(el){document.querySelectorAll('.music-item').forEach(i=>i.classList.remove('active'));el.classList.add('active');}
+
+/* WRITE TIMER */
+let wInt=null,wLeft=1200,wRun=false;
+function startWrite(){
+  if(wRun)return;wRun=true;
+  document.getElementById('w-timer').style.display='block';
+  document.getElementById('w-btn').textContent='Läuft…';
+  document.getElementById('w-btn').disabled=true;
+  wInt=setInterval(()=>{
+    wLeft--;
+    const m=Math.floor(wLeft/60),s=wLeft%60;
+    document.getElementById('w-timer').textContent=`${m}:${String(s).padStart(2,'0')}`;
+    if(wLeft<=0){clearInterval(wInt);document.getElementById('w-timer').textContent='Fertig ✓';}
+  },1000);
+}
+function stopWrite(){
+  clearInterval(wInt);wRun=false;wLeft=1200;
+  const t=document.getElementById('w-timer');if(t){t.style.display='none';t.textContent='20:00';}
+  const b=document.getElementById('w-btn');if(b){b.textContent='20 Min Timer';b.disabled=false;}
+}
+</script>
+</body>
+</html>
